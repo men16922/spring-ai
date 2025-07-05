@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ask a Question</title>
+</head>
+<body>
+<h2>Ask a Question</h2>
+
+<form th:action="@{/web/ask}" th:object="${question}" method="post">
+    <div>
+        <label for="question">Your Question:</label><br/>
+        <textarea id="question" th:field="*{question}" rows="5" cols="50"
+                  placeholder="Enter your question here..." required></textarea>
+    </div>
+    <br/>
+    <button type="submit">Submit</button>
+</form>
+
+<div th:if="${answer != null}">
+    <h3>Answer:</h3>
+    <pre th:text="${answer.answer}"></pre> <!-- 줄바꿈 유지 -->
+</div>
+</body>
+</html>
