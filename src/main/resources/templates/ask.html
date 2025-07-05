@@ -3,6 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <title>Ask a Question</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+        }
+
+        textarea {
+            width: 100%;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+
+        pre {
+            background-color: #efefef;
+            padding: 15px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        canvas {
+            margin-top: 30px;
+        }
+    </style>
 </head>
 <body>
 <h2>Ask a Question</h2>
@@ -10,8 +42,7 @@
 <form th:action="@{/web/ask}" th:object="${question}" method="post">
     <div>
         <label for="question">Your Question:</label><br/>
-        <textarea id="question" th:field="*{question}" rows="5" cols="50"
-                  placeholder="Enter your question here..." required></textarea>
+        <textarea id="question" th:field="*{question}" rows="8" placeholder="Enter your question here..." required></textarea>
     </div>
     <br/>
     <button type="submit">Submit</button>
@@ -19,7 +50,62 @@
 
 <div th:if="${answer != null}">
     <h3>Answer:</h3>
-    <pre th:text="${answer.answer}"></pre> <!-- 줄바꿈 유지 -->
+    <pre th:text="${answer.answer}" id="llmAnswer"></pre>
+
+    <canvas id="chargingChart" width="700" height="400"></canvas>
 </div>
+
+<script>
+    window.addEventListener("DOMContentLoaded", () => {
+        const rawText = document.getElementById("llmAnswer")?.innerText;
+
+        // JSON 추출 시도
+        const jsonStart = rawText.indexOf('{');
+        if (jsonStart !== -1) {
+            try {
+                const jsonStr = rawText.substring(jsonStart);
+                const data = JSON.parse(jsonStr);
+
+                const labels = data.history.map(item => item.date);
+                const values = data.history.map(item => item.kwh);
+
+                const ctx = document.getElementById('chargingChart');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Charging kWh',
+                            data: values,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'kWh'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    autoSkip: true,
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.warn("Failed to parse JSON from LLM output");
+            }
+        }
+    });
+</script>
 </body>
 </html>
+k
