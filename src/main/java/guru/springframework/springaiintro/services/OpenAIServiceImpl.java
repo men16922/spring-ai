@@ -25,6 +25,6 @@ public class OpenAIServiceImpl implements OpenAIService {
 
         ChatResponse response = chatModel.call(prompt);
 
-        return response.getResult().getOutput().getContent();
+        return response.getResult().getOutput().toString();
     }
 }
